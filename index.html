@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Peter Chang — Engineering at Scale</title>
+<meta name="description" content="Peter Chang — Senior Director, Head of Marketplace Engineering. Architecting and scaling global marketplace, advertising, and data-streaming systems." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fbfbfd;
+    --paper-2:#f2f3f7;
+    --paper-3:#eaecf2;
+    --ink:#0d1b3e;          /* deep navy text */
+    --ink-soft:#43507a;
+    --ink-faint:#8a93b2;
+    --line:#dde0ea;
+    --line-2:#cfd4e3;
+    --accent:#2748e6;        /* cobalt */
+    --accent-2:#5b74ff;
+    --accent-soft:#e7ebff;
+    --signal:#0bbf8f;
+    --maxw:1240px;
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Schibsted Grotesk",system-ui,sans-serif;
+    font-weight:400;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;cursor:none;
+  }
+  @media (pointer:coarse){ body{cursor:auto} }
+  ::selection{background:var(--accent);color:#fff}
+
+  /* ---------- background texture ---------- */
+  .dotgrid{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:radial-gradient(var(--line-2) 1.1px, transparent 1.1px);
+    background-size:26px 26px;
+    opacity:.6;
+    mask-image:radial-gradient(ellipse 100% 70% at 50% 30%, #000 20%, transparent 80%);
+    -webkit-mask-image:radial-gradient(ellipse 100% 70% at 50% 30%, #000 20%, transparent 80%);
+  }
+  .blue-wash{
+    position:fixed;top:-25vh;left:50%;transform:translateX(-50%);
+    width:120vw;height:90vh;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(ellipse 50% 60% at 30% 20%, rgba(39,72,230,.10), transparent 60%),
+      radial-gradient(ellipse 45% 55% at 78% 12%, rgba(91,116,255,.10), transparent 60%);
+    filter:blur(10px);
+  }
+  .grain{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:.025;mix-blend-mode:multiply}
+
+  /* ---------- custom cursor ---------- */
+  .cursor{position:fixed;top:0;left:0;width:7px;height:7px;border-radius:50%;background:var(--accent);z-index:9999;pointer-events:none;transform:translate(-50%,-50%);transition:width .25s var(--ease),height .25s var(--ease)}
+  .cursor-ring{position:fixed;top:0;left:0;width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(39,72,230,.45);z-index:9999;pointer-events:none;transform:translate(-50%,-50%);transition:width .3s var(--ease),height .3s var(--ease),border-color .3s}
+  body.hovering .cursor{width:0;height:0}
+  body.hovering .cursor-ring{width:54px;height:54px;border-color:var(--accent)}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,64px);position:relative;z-index:2}
+
+  /* ---------- top bar ---------- */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;justify-content:space-between;align-items:center;padding:20px clamp(20px,5vw,64px);font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.02em;color:var(--ink-soft);backdrop-filter:blur(8px);background:linear-gradient(var(--paper),rgba(251,251,253,0))}
+  .topbar .brand{color:var(--ink);text-decoration:none;font-weight:600}
+  .topbar nav{display:flex;gap:26px}
+  .topbar nav a{color:var(--ink-soft);text-decoration:none;transition:color .3s}
+  .topbar nav a:hover{color:var(--accent)}
+  .topbar-right{display:flex;align-items:center;gap:26px}
+  .pdf-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.02em;
+    color:#fff;text-decoration:none;background:var(--accent);
+    padding:9px 16px;border-radius:100px;transition:background .3s,transform .3s var(--ease),box-shadow .3s;
+    box-shadow:0 8px 20px -8px rgba(39,72,230,.55);
+  }
+  .pdf-btn:hover{background:var(--ink);transform:translateY(-2px);box-shadow:0 12px 26px -8px rgba(13,27,62,.5)}
+  .pdf-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  @media(max-width:720px){ .topbar nav{display:none} .pdf-btn span{display:none} .pdf-btn{padding:9px 11px} }
+
+  /* ---------- HERO ---------- */
+  .hero{min-height:100svh;display:grid;grid-template-columns:1.3fr .82fr;gap:clamp(30px,5vw,72px);align-items:center;padding-top:120px;padding-bottom:60px;position:relative}
+  @media(max-width:880px){ .hero{grid-template-columns:1fr;gap:44px} }
+  .hero-main{min-width:0}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:clamp(11px,1.1vw,13px);letter-spacing:.28em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:14px;margin-bottom:30px}
+  .eyebrow::before{content:"";width:46px;height:2px;background:var(--accent)}
+  .hero h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:clamp(56px,9.5vw,150px);line-height:.86;letter-spacing:-.035em;color:var(--ink)}
+
+  /* portrait */
+  .hero-portrait{position:relative;justify-self:center;width:100%;max-width:380px}
+  .hero-portrait .frame{
+    position:relative;border-radius:26px;overflow:hidden;aspect-ratio:1/1.08;
+    background:#0a1532;
+    box-shadow:0 40px 80px -38px rgba(13,27,62,.7),0 0 0 1px rgba(13,27,62,.08);
+  }
+  .hero-portrait img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block}
+  .hero-portrait .frame::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,transparent 55%,rgba(10,21,50,.35) 100%),
+               radial-gradient(120% 80% at 50% 0%, rgba(91,116,255,.16), transparent 60%);
+  }
+  /* accent ring + decorative offset square */
+  .hero-portrait .ring{position:absolute;inset:-12px;border:1.5px solid var(--line-2);border-radius:32px;z-index:-1}
+  .hero-portrait .tag{
+    position:absolute;left:18px;bottom:16px;z-index:2;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:#dbe2ff;display:flex;align-items:center;gap:8px;
+    background:rgba(10,21,50,.45);backdrop-filter:blur(6px);
+    padding:7px 12px;border-radius:100px;border:1px solid rgba(255,255,255,.12);
+  }
+  .hero-portrait .tag i{width:7px;height:7px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 3px rgba(11,191,143,.25)}
+  .hero-portrait .badge{
+    position:absolute;top:-14px;right:-14px;z-index:2;width:74px;height:74px;border-radius:18px;
+    background:linear-gradient(145deg,var(--accent-2),var(--accent));
+    display:grid;place-items:center;transform:rotate(-8deg);
+    box-shadow:0 18px 36px -14px rgba(39,72,230,.6);
+    font-family:"Caveat",cursive;font-weight:700;font-size:27px;letter-spacing:.01em;color:#fff;text-align:center;line-height:1;padding:0 8px;overflow:hidden;
+  }
+  @media(max-width:880px){ .hero-portrait{order:-1;max-width:300px} }
+  .hero h1 .ital{font-weight:300;color:var(--accent)}
+  .hero-sub{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 26px;margin-top:38px;max-width:780px}
+  .role{font-family:"Schibsted Grotesk",sans-serif;font-style:italic;font-weight:500;font-size:clamp(19px,2.4vw,28px);color:var(--ink-soft);line-height:1.3}
+  .meta-row{margin-top:28px;display:flex;flex-wrap:wrap;gap:10px 28px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-soft)}
+  .meta-row span{display:flex;align-items:center;gap:9px}
+  .meta-row .dot{width:6px;height:6px;border-radius:50%;background:var(--signal)}
+  .meta-row a{color:var(--ink-soft);text-decoration:none;border-bottom:1.5px solid var(--line-2);transition:color .3s,border-color .3s}
+  .meta-row a:hover{color:var(--accent);border-color:var(--accent)}
+  .scroll-cue{position:absolute;bottom:34px;right:clamp(20px,5vw,64px);font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);display:flex;align-items:center;gap:12px;writing-mode:vertical-rl}
+  .scroll-cue .bar{width:2px;height:54px;background:linear-gradient(var(--accent),transparent);animation:drop 2.2s var(--ease) infinite}
+  @keyframes drop{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+  @media(max-width:720px){ .scroll-cue{display:none} }
+
+  /* ---------- section scaffolding ---------- */
+  section{position:relative;padding:clamp(80px,12vh,150px) 0}
+  .sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:60px;border-top:2px solid var(--ink);padding-top:24px}
+  .sec-num{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--accent);letter-spacing:.06em;font-weight:500}
+  .sec-title{font-family:"Bricolage Grotesque",sans-serif;font-weight:500;font-size:clamp(26px,4vw,48px);letter-spacing:-.02em;line-height:1}
+  .sec-title em{font-style:italic;color:var(--accent);font-weight:300}
+
+  /* ---------- ABOUT (now 01) ---------- */
+  .about-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:clamp(30px,6vw,90px);align-items:start}
+  @media(max-width:860px){ .about-grid{grid-template-columns:1fr} }
+  .about-aside{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-faint);line-height:2;position:sticky;top:120px}
+  .about-aside b{color:var(--accent);font-weight:600;display:block;margin-bottom:8px}
+  .about-body p{font-family:"Bricolage Grotesque",sans-serif;font-weight:300;font-size:clamp(20px,2.3vw,30px);line-height:1.4;color:var(--ink);margin-bottom:28px;letter-spacing:-.01em}
+  .about-body p.small{font-family:"Schibsted Grotesk",sans-serif;font-size:clamp(15px,1.6vw,17px);font-weight:400;line-height:1.7;color:var(--ink-soft);letter-spacing:0}
+  .about-body .hl{color:var(--accent);font-style:italic}
+
+  /* ---------- STATS (now 02) · highlight band ---------- */
+  .stats{
+    position:relative;display:grid;grid-template-columns:repeat(4,1fr);
+    border-radius:24px;overflow:hidden;isolation:isolate;
+    background:linear-gradient(155deg,#0e1d44 0%,#0a1532 55%,#0d1b3e 100%);
+    box-shadow:0 40px 80px -45px rgba(13,27,62,.65);
+  }
+  /* blueprint pattern + glow */
+  .stats::before{
+    content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background-image:
+      linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+    background-size:34px 34px;
+    mask-image:radial-gradient(ellipse 90% 120% at 80% -10%, #000, transparent 75%);
+    -webkit-mask-image:radial-gradient(ellipse 90% 120% at 80% -10%, #000, transparent 75%);
+  }
+  .stats::after{
+    content:"";position:absolute;top:-40%;right:-10%;width:55%;height:160%;z-index:0;pointer-events:none;
+    background:radial-gradient(circle,rgba(91,116,255,.28),transparent 62%);filter:blur(8px);
+  }
+  .stat{
+    position:relative;z-index:1;padding:clamp(28px,3vw,40px) clamp(22px,2.4vw,34px);
+    display:flex;flex-direction:column;min-height:230px;
+    transition:background .5s var(--ease);
+  }
+  .stat + .stat{box-shadow:inset 1px 0 0 rgba(255,255,255,.08)}
+  .stat:hover{background:rgba(255,255,255,.035)}
+  .stat-k{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent-2);margin-bottom:auto;display:flex;align-items:center;gap:8px;
+  }
+  .stat-k::before{content:"";width:16px;height:2px;background:var(--accent-2);opacity:.8}
+  .stat .num{
+    font-family:"Bricolage Grotesque",sans-serif;font-weight:500;
+    font-size:clamp(34px,3.7vw,52px);line-height:1;letter-spacing:-.03em;
+    color:#fff;display:flex;align-items:baseline;gap:2px;white-space:nowrap;margin-top:22px;
+  }
+  .stat .num .u{font-size:.62em;color:var(--accent-2);font-weight:600;align-self:baseline;letter-spacing:-.02em}
+  .stat .num .sup{font-size:.42em;color:var(--accent-2);font-weight:600;align-self:flex-start;line-height:1;margin-left:2px}
+  .stat .num .arr{color:rgba(255,255,255,.45);font-weight:400;font-size:.7em;margin:0 2px;align-self:center}
+  .stat .lab{
+    margin-top:16px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.02em;
+    line-height:1.6;color:#9aa6cc;text-transform:uppercase;
+  }
+  @media(max-width:900px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stat{min-height:200px}
+    .stat:nth-child(odd){box-shadow:none}
+    .stat:nth-child(n+3){box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+  }
+  @media(max-width:480px){
+    .stats{grid-template-columns:1fr}
+    .stat{box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
+    .stat:first-child{box-shadow:none!important}
+  }
+
+  /* ---------- EXPERIENCE ---------- */
+  .xp{border-top:1px solid var(--line)}
+  .xp-row{display:grid;grid-template-columns:0.5fr 1.6fr 1.1fr auto;gap:24px;align-items:center;padding:28px 8px;border-bottom:1px solid var(--line);position:relative;transition:padding .4s var(--ease);text-decoration:none;color:inherit}
+  .xp-row::before{content:"";position:absolute;inset:0;background:var(--paper-2);opacity:0;transition:opacity .4s var(--ease);z-index:-1;border-radius:12px}
+  .xp-row:hover{padding-left:24px;padding-right:24px}
+  .xp-row:hover::before{opacity:1}
+  .xp-year{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-faint)}
+  .xp-role{font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(19px,2.2vw,27px);font-weight:500;line-height:1.12;letter-spacing:-.01em}
+  .xp-row:hover .xp-role{color:var(--accent)}
+  .xp-co{font-size:14px;color:var(--ink-soft);font-weight:600}
+  .xp-co .place{display:block;font-size:11.5px;color:var(--ink-faint);font-weight:400;font-family:"IBM Plex Mono",monospace;margin-top:3px}
+  .xp-arrow{font-family:"IBM Plex Mono";color:var(--ink-faint);transition:transform .4s var(--ease),color .4s;font-size:18px}
+  .xp-row:hover .xp-arrow{color:var(--accent);transform:translate(4px,-4px)}
+  .xp-detail{grid-column:1/-1;overflow:hidden;max-height:0;opacity:0;transition:max-height .55s var(--ease),opacity .45s var(--ease),margin .45s var(--ease)}
+  .xp-row[data-open="true"] .xp-detail{max-height:520px;opacity:1;margin-top:22px}
+  .xp-detail ul{list-style:none;display:grid;gap:11px;max-width:880px;padding-left:2px}
+  .xp-detail li{font-size:14.5px;line-height:1.6;color:var(--ink-soft);padding-left:22px;position:relative}
+  .xp-detail li::before{content:"→";position:absolute;left:0;color:var(--accent);font-family:"IBM Plex Mono"}
+  @media(max-width:760px){
+    .xp-row{grid-template-columns:1fr auto;gap:6px 16px}
+    .xp-year{grid-row:1;order:-1;grid-column:1/-1}
+    .xp-co{grid-column:1/-1}
+    .xp-arrow{position:absolute;top:28px;right:8px}
+  }
+
+  /* ---------- COMPETENCIES ---------- */
+  .comp-wrap{display:flex;flex-wrap:wrap;gap:12px}
+  .chip{font-family:"IBM Plex Mono",monospace;font-size:13px;padding:11px 18px;border:1.5px solid var(--line-2);border-radius:100px;color:var(--ink-soft);transition:all .35s var(--ease);cursor:default;background:var(--paper)}
+  .chip:hover{border-color:var(--accent);color:#fff;background:var(--accent);transform:translateY(-3px)}
+
+  /* ---------- PRODUCT ---------- */
+  .product{border:1px solid var(--line);border-radius:24px;background:linear-gradient(135deg,#fff,var(--paper-2));padding:clamp(34px,5vw,60px);position:relative;overflow:hidden;display:grid;grid-template-columns:auto 1fr;gap:clamp(28px,5vw,56px);align-items:center;box-shadow:0 30px 60px -40px rgba(13,27,62,.3)}
+  .product::before{content:"";position:absolute;top:-50%;right:-10%;width:50%;height:200%;background:radial-gradient(circle,rgba(39,72,230,.09),transparent 65%)}
+  .product-badge{width:clamp(96px,12vw,132px);height:clamp(96px,12vw,132px);border-radius:26px;overflow:hidden;flex-shrink:0;box-shadow:0 26px 50px -18px rgba(13,27,62,.4),0 0 0 1px rgba(13,27,62,.06)}
+  .product-badge img{width:100%;height:100%;object-fit:cover;display:block}
+  .product h3{font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:clamp(26px,3.4vw,40px);margin-bottom:4px;letter-spacing:-.02em}
+  .product .tag{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;display:block}
+  .product p{color:var(--ink-soft);font-size:clamp(15px,1.7vw,18px);line-height:1.65;max-width:620px}
+  .product-link{display:inline-flex;align-items:center;gap:9px;margin-top:22px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--accent);text-decoration:none;border-bottom:1.5px solid var(--accent-soft);padding-bottom:3px;transition:border-color .3s,gap .3s var(--ease)}
+  .product-link:hover{border-color:var(--accent);gap:13px}
+  .product-link .ar{transition:transform .3s var(--ease)}
+  .product-link:hover .ar{transform:translate(3px,-3px)}
+  @media(max-width:620px){ .product{grid-template-columns:1fr} }
+
+  /* ---------- EDUCATION ---------- */
+  .edu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .edu{background:var(--paper);padding:32px 26px;transition:background .4s}
+  .edu:hover{background:var(--accent-soft)}
+  .edu .place{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+  .edu h4{font-family:"Bricolage Grotesque",sans-serif;font-weight:500;font-size:clamp(19px,2vw,23px);line-height:1.2;margin-bottom:8px;letter-spacing:-.01em}
+  .edu .deg{font-size:14px;color:var(--ink-soft);line-height:1.5}
+  @media(max-width:780px){ .edu-grid{grid-template-columns:1fr} }
+
+  /* ---------- CONTACT ---------- */
+  .contact{padding-bottom:clamp(70px,10vh,120px)}
+  .contact-inner{border-top:2px solid var(--ink);padding-top:56px}
+  .contact h2{font-family:"Bricolage Grotesque",sans-serif;font-weight:500;font-size:clamp(42px,8.5vw,130px);line-height:.9;letter-spacing:-.035em;margin-bottom:40px}
+  .contact h2 em{font-style:italic;color:var(--accent);font-weight:300}
+  .contact-links{display:flex;flex-wrap:wrap;gap:14px 18px}
+  .clink{font-family:"IBM Plex Mono";font-size:13px;padding:13px 24px;border:1.5px solid var(--ink);border-radius:100px;color:var(--ink);text-decoration:none;transition:all .35s var(--ease);display:flex;align-items:center;gap:10px}
+  .clink:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .clink .ar{transition:transform .35s var(--ease)}
+  .clink:hover .ar{transform:translate(3px,-3px)}
+  .foot-meta{margin-top:76px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;color:var(--ink-faint);text-transform:uppercase}
+
+  /* ---------- reveals ---------- */
+  .reveal{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  .stagger>*{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+  .stagger.in>*{opacity:1;transform:none}
+  .h-anim{opacity:0;transform:translateY(40px);animation:rise 1.15s var(--ease) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .d1{animation-delay:.1s}.d2{animation-delay:.28s}.d3{animation-delay:.46s}.d4{animation-delay:.62s}.d5{animation-delay:.78s}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal,.stagger>*,.h-anim{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="dotgrid"></div>
+<div class="blue-wash"></div>
+<svg class="grain"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+
+<div class="cursor"></div>
+<div class="cursor-ring"></div>
+
+<div class="topbar">
+  <a href="#top" class="brand" data-hov>PETER&nbsp;CHANG ©</a>
+  <div class="topbar-right">
+    <nav>
+      <a href="#work" data-hov>Experience</a>
+      <a href="#build" data-hov>What I Build</a>
+      <a href="#contact" data-hov>Contact</a>
+    </nav>
+    <a class="pdf-btn" href="Peter_Chang_Resume.pdf" download data-hov>
+      <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      <span>Download CV</span>
+    </a>
+  </div>
+</div>
+
+<div class="wrap" id="top">
+
+  <!-- ============ HERO ============ -->
+  <header class="hero">
+    <div class="hero-main">
+      <div class="eyebrow h-anim d1">Engineering Executive · Systems at Scale</div>
+      <h1>
+        <span class="h-anim d1">Peter</span><br>
+        <span class="h-anim d2"><span class="ital">Chang</span></span>
+      </h1>
+      <div class="hero-sub h-anim d3">
+        <p class="role">Senior Director — Head of Marketplace Engineering, building global systems from the ground up.</p>
+      </div>
+      <div class="meta-row h-anim d4">
+        <span><i class="dot"></i> Bellevue, WA</span>
+        <span><a href="mailto:contact@peter-chang.net" data-hov>contact@peter-chang.net</a></span>
+        <span><a href="https://www.linkedin.com/in/p1chang" target="_blank" rel="noopener" data-hov>linkedin / p1chang ↗</a></span>
+      </div>
+    </div>
+    <div class="hero-portrait h-anim d3">
+      <span class="ring"></span>
+      <div class="frame">
+        <img src="peter-portrait.png" alt="Portrait of Peter Chang" />
+        <span class="tag"><i></i> Open to connect</span>
+      </div>
+      <div class="badge">Think</div>
+    </div>
+    <div class="scroll-cue h-anim d5">Scroll <span class="bar"></span></div>
+  </header>
+
+  <!-- ============ 01 · THESIS ============ -->
+  <section id="about">
+    <div class="sec-head reveal">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">The <em>thesis</em></h2>
+    </div>
+    <div class="about-grid">
+      <aside class="about-aside reveal">
+        <b>// Focus</b>
+        Marketplace systems<br>
+        Advertising engines<br>
+        High-volume streaming<br>
+        Applied AI platforms<br>
+        <br>
+        <b>// Languages</b>
+        English — native<br>
+        Chinese — native
+      </aside>
+      <div class="about-body reveal">
+        <p>I architect and scale the <span class="hl">global marketplace, advertising, and data-streaming infrastructure</span> that moves billions in commerce — and I lead the international teams that build it.</p>
+        <p class="small">Results-driven engineering leader with a proven history of spearheading multinational teams to consistent double-digit revenue expansion. I favor flat, three-layer organizational models that accelerate collaborative innovation and swift business delivery. Today I direct initiatives to enhance catalog quality and integrity — ensuring a best-in-class product selection experience for a global marketplace ecosystem, powered by customizable AI frameworks spanning OCR to automated content generation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 · SCALE ============ -->
+  <section id="scale">
+    <div class="sec-head reveal">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">Operating at <em>scale</em></h2>
+    </div>
+    <div class="stats stagger reveal">
+      <div class="stat">
+        <span class="stat-k">Revenue</span>
+        <div class="num">$1<span class="u">B+</span></div>
+        <div class="lab">Ad revenue engine<br>architected from zero</div>
+      </div>
+      <div class="stat">
+        <span class="stat-k">Teams</span>
+        <div class="num">10<span class="arr">→</span>100<span class="u">+</span></div>
+        <div class="lab">Engineers scaled<br>on a single org</div>
+      </div>
+      <div class="stat">
+        <span class="stat-k">Footprint</span>
+        <div class="num">3</div>
+        <div class="lab">Countries — US · KR · CN<br>multinational teams</div>
+      </div>
+      <div class="stat">
+        <span class="stat-k">Throughput</span>
+        <div class="num">10<span class="sup">12</span></div>
+        <div class="lab">Trillions of events<br>petabytes of data</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 · EXPERIENCE ============ -->
+  <section id="work">
+    <div class="sec-head reveal">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">Selected <em>experience</em></h2>
+    </div>
+    <div class="xp reveal">
+
+      <a class="xp-row" data-acc href="#" data-hov>
+        <div class="xp-year">2022 — NOW</div>
+        <div class="xp-role">Head of Marketplace Engineering</div>
+        <div class="xp-co">Coupang<span class="place">Sr. Director · Seattle, WA</span></div>
+        <div class="xp-arrow">↗</div>
+        <div class="xp-detail"><ul>
+          <li>Direct a multinational org across US, South Korea & China driving double-digit annual revenue growth via a flat three-layer model.</li>
+          <li>Spearhead KR & TW growth with applied AI — OCR through automated content generation; built customizable AI frameworks per seller category.</li>
+          <li>Own Marketplace Platform (reliability & core architecture), Marketplace Growth (conversion & GMV), and Other Bets (global ops & Travel).</li>
+          <li>Drive quality via automation: intelligent metadata enrichment, image upgrading, automated descriptions, and algorithmic price optimization.</li>
+        </ul></div>
+      </a>
+
+      <a class="xp-row" data-acc href="#" data-hov>
+        <div class="xp-year">2020 — 2022</div>
+        <div class="xp-role">Director / Sr. Director, Ads Infrastructure</div>
+        <div class="xp-co">Coupang<span class="place">Seattle, WA</span></div>
+        <div class="xp-arrow">↗</div>
+        <div class="xp-detail"><ul>
+          <li>Led ground-up architecture of a proprietary advertising engine; scaled the team 10 → 100+ and surpassed $1B revenue in 2022.</li>
+          <li>Architected the core ML-driven ranking engine: indexing, pre-ranking, ranking & complex filtering pipelines at high volume.</li>
+          <li>Directed Ads Creatives UX across iOS, Android & web; engineered real-time budget, settlement & ML-feature reporting frameworks.</li>
+          <li>Deployed automated integrity & fraud-detection protocols within the ad-serving pipeline.</li>
+        </ul></div>
+      </a>
+
+      <a class="xp-row" data-acc href="#" data-hov>
+        <div class="xp-year">2018 — 2020</div>
+        <div class="xp-role">Director, Services Platform</div>
+        <div class="xp-co">Coupang<span class="place">Seattle, WA</span></div>
+        <div class="xp-arrow">↗</div>
+        <div class="xp-detail"><ul>
+          <li>Transformed Data Services into a unified global Service Platform org — 40+ engineers across US, China & South Korea.</li>
+          <li>Messaging Platform: petabytes/day via Managed Kafka, Canal (MySQL sync) & the proprietary 'Roller' S3/HDFS ingestion pipeline.</li>
+          <li>Weblogging: centralized event-tracking processing trillions of signals; Hive + real-time interfaces powering data-science ML.</li>
+          <li>Common Tooling: global API Gateway, standardized deployment architecture & automated AWS cost-optimization frameworks.</li>
+        </ul></div>
+      </a>
+
+      <a class="xp-row" data-acc href="#" data-hov>
+        <div class="xp-year">2017 — 2018</div>
+        <div class="xp-role">Senior Manager, Data Services</div>
+        <div class="xp-co">Coupang<span class="place">Seattle, WA</span></div>
+        <div class="xp-arrow">↗</div>
+        <div class="xp-detail"><ul>
+          <li>Grew a high-velocity org from 4 → 20+ engineers, mentoring multiple line managers within 18 months.</li>
+          <li>Architected 'Lumberjack' — a full-stack weblogging ecosystem with cross-platform libraries & a high-volume aggregation engine.</li>
+          <li>Built a unified Kafka + Spark streaming framework letting teams ship managed pipelines in under 60 minutes.</li>
+        </ul></div>
+      </a>
+
+      <a class="xp-row" data-acc href="#" data-hov>
+        <div class="xp-year">2015 — 2017</div>
+        <div class="xp-role">Tech Lead, Transaction Bridge</div>
+        <div class="xp-co">Expedia, Inc.<span class="place">Bellevue, WA</span></div>
+        <div class="xp-arrow">↗</div>
+        <div class="xp-detail"><ul>
+          <li>Technical lead for Transaction Bridge (TxB) — end-to-end order distribution from Expedia, Hotels.com & Orbitz to downstream consumers.</li>
+          <li>Stack: Kafka streaming backbone, Storm real-time compute, Cassandra & Elasticsearch — fully containerized via Docker on AWS EC2.</li>
+          <li>Orchestrated cross-org support across Finance settlements, Trip Planning, Data Science & Fraud Modeling.</li>
+        </ul></div>
+      </a>
+
+      <a class="xp-row" data-acc href="#" data-hov>
+        <div class="xp-year">2014 — 2015</div>
+        <div class="xp-role">Senior Software Engineer</div>
+        <div class="xp-co">Visa<span class="place">Bellevue, WA</span></div>
+        <div class="xp-arrow">↗</div>
+        <div class="xp-detail"><ul>
+          <li>Architected components for the Proxy Connection Service (PCS) — a high-performance Java REST API standardizing transaction lifecycles.</li>
+          <li>Built a logging & validation framework from scratch at 95% coverage, clearing Fortify & external penetration security audits.</li>
+        </ul></div>
+      </a>
+
+      <a class="xp-row" data-acc href="#" data-hov>
+        <div class="xp-year">2011 — 2014</div>
+        <div class="xp-role">Software Engineer</div>
+        <div class="xp-co">SAP Fieldglass<span class="place">Naperville, IL</span></div>
+        <div class="xp-arrow">↗</div>
+        <div class="xp-detail"><ul>
+          <li>Full-stack engineer on enterprise web apps — Java, MySQL & JavaScript with key open-source frameworks.</li>
+          <li>Built ERP integration modules for Chevron, Vodafone & Bank of America via SOAP, REST & SFTP.</li>
+          <li>Engineered SQL & high-volume transmission optimizations, cutting reporting execution latency substantially.</li>
+        </ul></div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ============ 04 · WHAT I BUILD ============ -->
+  <section id="build">
+    <div class="sec-head reveal">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">What I <em>build</em></h2>
+    </div>
+    <div class="comp-wrap stagger reveal">
+      <span class="chip" data-hov>End-to-End E-commerce Ecosystems</span>
+      <span class="chip" data-hov>Highly Extensible Global Architectures</span>
+      <span class="chip" data-hov>High-Volume Systems Engineering</span>
+      <span class="chip" data-hov>Algorithmic Price Optimization</span>
+      <span class="chip" data-hov>Advanced AI Applications</span>
+      <span class="chip" data-hov>Harness Engineering</span>
+      <span class="chip" data-hov>Strategic Business Data Analytics</span>
+      <span class="chip" data-hov>Multi-channel Marketing Operations</span>
+      <span class="chip" data-hov>Brand Incubation</span>
+      <span class="chip" data-hov>Cross-functional Technical Leadership</span>
+      <span class="chip" data-hov>Kafka · Spark · Storm</span>
+      <span class="chip" data-hov>Cassandra · Elasticsearch · Hive</span>
+    </div>
+
+    <div style="height:clamp(50px,8vh,90px)"></div>
+
+    <div class="product reveal">
+      <div class="product-badge"><img src="via-icon.png" alt="Via Journal app icon" /></div>
+      <div>
+        <span class="tag">Personal Product · iOS</span>
+        <h3>Via Journal</h3>
+        <p>An intelligent iOS application leveraging advanced AI to provide personalized journaling feedback and automated narrative synthesis — turning daily entries into reflective, structured story.</p>
+        <a class="product-link" href="https://via.peter-chang.net" target="_blank" rel="noopener" data-hov>via.peter-chang.net <span class="ar">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 · EDUCATION ============ -->
+  <section id="education">
+    <div class="sec-head reveal">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">Education</h2>
+    </div>
+    <div class="edu-grid stagger reveal">
+      <div class="edu">
+        <div class="place">Chicago, IL</div>
+        <h4>Illinois Institute of Technology</h4>
+        <div class="deg">M.S., Computer Engineering</div>
+      </div>
+      <div class="edu">
+        <div class="place">London, UK</div>
+        <h4>Queen Mary University of London</h4>
+        <div class="deg">B.S., Telecommunication Engineering with Management</div>
+      </div>
+      <div class="edu">
+        <div class="place">Beijing, China</div>
+        <h4>Beijing Univ. of Posts & Telecommunications</h4>
+        <div class="deg">B.S., Telecommunication Engineering with Management</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section id="contact" class="contact">
+    <div class="contact-inner reveal">
+      <h2>Let's build something<br>that <em>scales.</em></h2>
+      <div class="contact-links">
+        <a class="clink" href="mailto:contact@peter-chang.net" data-hov>contact@peter-chang.net <span class="ar">↗</span></a>
+        <a class="clink" href="https://www.linkedin.com/in/p1chang" target="_blank" rel="noopener" data-hov>LinkedIn <span class="ar">↗</span></a>
+      </div>
+      <div class="foot-meta">
+        <span>Peter Chang © 2026</span>
+        <span>Bellevue · Washington</span>
+        <span>Engineering at scale</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const dot=document.querySelector('.cursor'),ring=document.querySelector('.cursor-ring');
+  let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+  addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+  (function loop(){rx+=(mx-rx)*.16;ry+=(my-ry)*.16;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
+  document.querySelectorAll('[data-hov]').forEach(el=>{
+    el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+    el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
+  });
+  document.querySelectorAll('[data-acc]').forEach(row=>{
+    row.addEventListener('click',e=>{
+      e.preventDefault();
+      const open=row.getAttribute('data-open')==='true';
+      document.querySelectorAll('[data-acc]').forEach(r=>r.setAttribute('data-open','false'));
+      row.setAttribute('data-open',open?'false':'true');
+    });
+  });
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        en.target.classList.add('in');
+        if(en.target.classList.contains('stagger')){
+          en.target.querySelectorAll(':scope > *').forEach((k,j)=>k.style.transitionDelay=(j*0.07)+'s');
+        }
+        io.unobserve(en.target);
+      }
+    });
+  },{threshold:0.14});
+  document.querySelectorAll('.reveal,.stagger').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
