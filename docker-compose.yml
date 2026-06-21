@@ -4,5 +4,5 @@ services:
     image: peter-chang-site:latest
     container_name: peter-chang-site
     ports:
-      - "777:80"        # host 777 -> container 80
+      - "2080:80"       # host 2080 -> container 80
     restart: unless-stopped
