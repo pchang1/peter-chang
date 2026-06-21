@@ -11,7 +11,7 @@ COPY index.html ./
 COPY peter-portrait.png via-icon.png ./
 COPY Peter_Chang_Resume.pdf ./
 COPY resume-print.html ./
-RUN ln -sf via-icon.png AppIcon.png && ln -sf via-icon.png apple-touch-icon.png && ln -sf via-icon.png apple-touch-icon-precomposed.png
+RUN ln -sf via-icon.png AppIcon.png && ln -sf via-icon.png apple-touch-icon.png && ln -sf via-icon.png apple-touch-icon-precomposed.png && ln -sf via-icon.png favicon.ico
 
 EXPOSE 80
 
