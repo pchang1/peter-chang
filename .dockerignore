@@ -7,3 +7,4 @@ docker-compose.yml
 .dockerignore
 Peter_Chang_Resume.docx
 *.log
+*.sh
